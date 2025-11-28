@@ -3,627 +3,430 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samurai Duel</title>
+    <title>Samurai Duel - First Cut Style</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            cursor: crosshair;
         }
 
         body {
             font-family: 'Courier New', monospace;
-            background: linear-gradient(180deg, #1a0000 0%, #4a0000 100%);
+            background: #1a0808;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
-            color: #fff;
         }
 
-        #gameContainer {
-            width: 100%;
-            max-width: 1200px;
-            height: 100vh;
-            position: relative;
-            background: linear-gradient(180deg, #2a1a1a 0%, #1a0808 100%);
-            box-shadow: 0 0 50px rgba(139, 0, 0, 0.5);
-        }
-
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        #gameCanvas {
+            border: 3px solid #8b0000;
+            box-shadow: 0 0 30px rgba(139, 0, 0, 0.5);
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
 
         #ui {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 20px;
+            left: 20px;
+            color: #ff0000;
+            font-size: 20px;
+            text-shadow: 2px 2px 4px #000;
             pointer-events: none;
         }
 
-        .title-screen {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
+        #startScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             text-align: center;
-            padding: 20px;
-        }
-
-        .title {
-            font-size: 72px;
-            font-weight: bold;
             color: #ff0000;
-            text-shadow: 0 0 20px #ff0000, 0 0 40px #8b0000;
-            margin-bottom: 20px;
-            letter-spacing: 8px;
+            font-size: 48px;
+            text-shadow: 0 0 20px #ff0000;
         }
 
-        .subtitle {
+        .btn {
+            margin-top: 30px;
+            padding: 15px 40px;
             font-size: 24px;
-            color: #ffcccc;
-            margin-bottom: 60px;
-            letter-spacing: 4px;
-        }
-
-        .start-btn {
-            pointer-events: all;
-            font-size: 32px;
-            padding: 20px 60px;
-            background: linear-gradient(135deg, #8b0000 0%, #ff0000 100%);
-            border: 3px solid #ff4444;
+            background: #8b0000;
+            border: 3px solid #ff0000;
             color: white;
             cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-        }
-
-        .start-btn:hover {
-            background: linear-gradient(135deg, #ff0000 0%, #ff4444 100%);
-            transform: scale(1.05);
-            box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
-        }
-
-        .hud {
-            position: absolute;
-            top: 30px;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 50px;
-            font-size: 24px;
-        }
-
-        .stat {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px 30px;
-            border: 2px solid #ff0000;
-            border-radius: 5px;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
-        }
-
-        .prompt {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 48px;
-            font-weight: bold;
-            color: #ff0000;
-            text-shadow: 0 0 20px #ff0000;
-            animation: pulse 0.5s infinite alternate;
-            text-align: center;
-        }
-
-        @keyframes pulse {
-            from { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
-            to { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-        }
-
-        .result {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            font-size: 64px;
-            font-weight: bold;
-            padding: 40px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 4px solid #ff0000;
-            border-radius: 10px;
-            box-shadow: 0 0 40px rgba(255, 0, 0, 0.6);
-        }
-
-        .victory {
-            color: #00ff00;
-            text-shadow: 0 0 20px #00ff00;
-        }
-
-        .defeat {
-            color: #ff0000;
-            text-shadow: 0 0 20px #ff0000;
-        }
-
-        .continue-text {
-            font-size: 20px;
-            margin-top: 20px;
-            color: #cccccc;
             pointer-events: all;
-            cursor: pointer;
+            font-family: 'Courier New', monospace;
         }
 
-        .instructions {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            font-size: 18px;
-            color: #ffcccc;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px 30px;
-            border-radius: 5px;
+        .btn:hover {
+            background: #ff0000;
         }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <canvas id="gameCanvas"></canvas>
-        <div id="ui"></div>
+    <div id="startScreen">
+        <div>侍 FIRST CUT</div>
+        <button class="btn" onclick="startGame()">BEGIN DUEL</button>
+        <div style="font-size: 18px; margin-top: 30px; color: #ffcccc;">
+            Move mouse to aim sword<br>
+            Click to SLASH<br>
+            Right-click to DODGE<br>
+            Space to SHOVE
+        </div>
     </div>
+    <div id="ui"></div>
+    <canvas id="gameCanvas" width="1200" height="700"></canvas>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const ui = document.getElementById('ui');
 
-        // Set canvas size
-        function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+        let gameStarted = false;
+        let gameOver = false;
+        let kills = 0;
 
-        // Game states
-        const STATES = {
-            TITLE: 'title',
-            READY: 'ready',
-            WAITING: 'waiting',
-            STRIKE: 'strike',
-            RESULT: 'result'
-        };
-
-        // Game object
-        const game = {
-            state: STATES.TITLE,
-            round: 0,
-            wins: 0,
-            losses: 0,
-            strikeTime: 0,
-            playerStrikeTime: 0,
-            enemyStrikeTime: 0,
-            winner: null,
-            bloodParticles: [],
-            slashEffect: null,
-            cameraShake: 0
-        };
-
-        // Character objects
+        // Player character
         const player = {
-            x: canvas.width * 0.25,
-            y: canvas.height * 0.5,
-            width: 80,
-            height: 180,
-            stance: 'ready',
+            x: 300,
+            y: 500,
+            width: 30,
+            height: 80,
+            swordAngle: 0,
+            swordLength: 80,
             attacking: false,
+            attackTimer: 0,
+            dodging: false,
+            dodgeTimer: 0,
             dead: false,
-            health: 100
+            headX: 0,
+            headY: 0
         };
 
+        // Enemy
         const enemy = {
-            x: canvas.width * 0.75,
-            y: canvas.height * 0.5,
-            width: 80,
-            height: 180,
-            stance: 'ready',
+            x: 900,
+            y: 500,
+            width: 30,
+            height: 80,
+            swordAngle: Math.PI,
+            swordLength: 80,
             attacking: false,
+            attackTimer: 0,
+            dodging: false,
+            dodgeTimer: 0,
             dead: false,
-            health: 100
+            headX: 0,
+            headY: 0,
+            aiTimer: 0,
+            aiState: 'idle'
         };
 
-        // Blood particle system
-        class BloodParticle {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.vx = (Math.random() - 0.5) * 10;
-                this.vy = Math.random() * -8 - 5;
-                this.gravity = 0.5;
-                this.size = Math.random() * 8 + 4;
-                this.life = 1.0;
-                this.decay = Math.random() * 0.02 + 0.01;
+        // Blood particles
+        const blood = [];
+
+        // Mouse tracking
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+        });
+
+        canvas.addEventListener('click', () => {
+            if (gameStarted && !player.dead && !player.attacking) {
+                player.attacking = true;
+                player.attackTimer = 15;
             }
+        });
 
-            update() {
-                this.vy += this.gravity;
-                this.x += this.vx;
-                this.y += this.vy;
-                this.life -= this.decay;
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            if (gameStarted && !player.dead && !player.dodging) {
+                player.dodging = true;
+                player.dodgeTimer = 20;
             }
+        });
 
-            draw() {
-                ctx.globalAlpha = this.life;
-                ctx.fillStyle = '#8b0000';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.globalAlpha = 1.0;
-            }
-        }
-
-        // Slash effect
-        class SlashEffect {
-            constructor(x, y, direction) {
-                this.x = x;
-                this.y = y;
-                this.direction = direction;
-                this.life = 1.0;
-                this.length = 200;
-                this.width = 10;
-            }
-
-            update() {
-                this.life -= 0.05;
-            }
-
-            draw() {
-                ctx.globalAlpha = this.life;
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = this.width;
-                ctx.lineCap = 'round';
-                ctx.beginPath();
-                const angle = this.direction === 'left' ? -Math.PI / 4 : Math.PI / 4;
-                ctx.moveTo(this.x, this.y);
-                ctx.lineTo(
-                    this.x + Math.cos(angle) * this.length * this.direction,
-                    this.y + Math.sin(angle) * this.length
-                );
-                ctx.stroke();
-                ctx.globalAlpha = 1.0;
-            }
-        }
-
-        // Draw character
-        function drawCharacter(char, flip = false) {
-            const shakeX = Math.random() * game.cameraShake - game.cameraShake / 2;
-            const shakeY = Math.random() * game.cameraShake - game.cameraShake / 2;
-
-            ctx.save();
-            ctx.translate(char.x + shakeX, char.y + shakeY);
-
-            if (flip) ctx.scale(-1, 1);
-
-            // Body
-            const bodyColor = char.dead ? '#4a0000' : '#1a1a1a';
-            ctx.fillStyle = bodyColor;
-            ctx.fillRect(-char.width/2, -char.height/2, char.width, char.height);
-
-            // Head
-            ctx.fillStyle = char.dead ? '#6a4a4a' : '#d4a574';
-            ctx.fillRect(-char.width/2 + 10, -char.height/2 - 30, char.width - 20, 30);
-
-            // Sword
-            if (!char.dead) {
-                ctx.strokeStyle = '#c0c0c0';
-                ctx.lineWidth = 4;
-                ctx.beginPath();
-
-                if (char.attacking) {
-                    // Horizontal slash
-                    ctx.moveTo(char.width/2, 0);
-                    ctx.lineTo(char.width/2 + 100, 0);
-                } else {
-                    // Ready stance
-                    ctx.moveTo(char.width/2 + 20, -40);
-                    ctx.lineTo(char.width/2 + 20, 40);
-                }
-                ctx.stroke();
-
-                // Sword handle
-                ctx.strokeStyle = '#8b0000';
-                ctx.lineWidth = 8;
-                ctx.beginPath();
-                if (char.attacking) {
-                    ctx.moveTo(char.width/2 - 10, 0);
-                    ctx.lineTo(char.width/2 + 10, 0);
-                } else {
-                    ctx.moveTo(char.width/2 + 20, 30);
-                    ctx.lineTo(char.width/2 + 20, 50);
-                }
-                ctx.stroke();
-            }
-
-            // Blood splatter if dead
-            if (char.dead) {
-                ctx.fillStyle = '#8b0000';
-                for (let i = 0; i < 5; i++) {
-                    const splatterX = Math.random() * char.width - char.width/2;
-                    const splatterY = Math.random() * char.height - char.height/2;
-                    ctx.beginPath();
-                    ctx.arc(splatterX, splatterY, Math.random() * 10 + 5, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-
-            ctx.restore();
-        }
-
-        // Draw ground
-        function drawGround() {
-            const groundY = canvas.height * 0.7;
-            ctx.fillStyle = '#3a2a2a';
-            ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-
-            // Ground line
-            ctx.strokeStyle = '#8b0000';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(0, groundY);
-            ctx.lineTo(canvas.width, groundY);
-            ctx.stroke();
-        }
-
-        // Draw background
-        function drawBackground() {
-            // Sky gradient
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.7);
-            gradient.addColorStop(0, '#4a1a1a');
-            gradient.addColorStop(1, '#2a0a0a');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height * 0.7);
-
-            // Mountains silhouette
-            ctx.fillStyle = '#1a0a0a';
-            ctx.beginPath();
-            ctx.moveTo(0, canvas.height * 0.6);
-            for (let i = 0; i <= canvas.width; i += 50) {
-                ctx.lineTo(i, canvas.height * 0.6 - Math.random() * 100 - 50);
-            }
-            ctx.lineTo(canvas.width, canvas.height * 0.7);
-            ctx.lineTo(0, canvas.height * 0.7);
-            ctx.closePath();
-            ctx.fill();
-        }
-
-        // Show title screen
-        function showTitleScreen() {
-            ui.innerHTML = `
-                <div class="title-screen">
-                    <div class="title">侍 DUEL</div>
-                    <div class="subtitle">FIRST STRIKE</div>
-                    <button class="start-btn" onclick="startGame()">BEGIN</button>
-                    <div class="instructions">
-                        Wait for the signal, then press SPACE to strike!<br>
-                        Strike too early and you lose.
-                    </div>
-                </div>
-            `;
-        }
-
-        // Start game
-        function startGame() {
-            game.state = STATES.READY;
-            game.round++;
-            player.dead = false;
-            player.attacking = false;
-            player.health = 100;
-            enemy.dead = false;
-            enemy.attacking = false;
-            enemy.health = 100;
-            game.bloodParticles = [];
-            game.slashEffect = null;
-            game.cameraShake = 0;
-
-            ui.innerHTML = `
-                <div class="hud">
-                    <div class="stat">Round: ${game.round}</div>
-                    <div class="stat">Wins: ${game.wins} | Losses: ${game.losses}</div>
-                </div>
-                <div class="prompt">GET READY...</div>
-            `;
-
-            // Wait random time before STRIKE
-            const waitTime = Math.random() * 2000 + 1500;
-            setTimeout(() => {
-                game.state = STATES.WAITING;
-                ui.innerHTML = `
-                    <div class="hud">
-                        <div class="stat">Round: ${game.round}</div>
-                        <div class="stat">Wins: ${game.wins} | Losses: ${game.losses}</div>
-                    </div>
-                `;
-            }, 1500);
-
-            setTimeout(() => {
-                if (game.state === STATES.WAITING) {
-                    game.state = STATES.STRIKE;
-                    game.strikeTime = Date.now();
-                    ui.innerHTML = `
-                        <div class="hud">
-                            <div class="stat">Round: ${game.round}</div>
-                            <div class="stat">Wins: ${game.wins} | Losses: ${game.losses}</div>
-                        </div>
-                        <div class="prompt">STRIKE!</div>
-                    `;
-
-                    // Enemy reaction time (random)
-                    const enemyReaction = Math.random() * 300 + 100;
-                    setTimeout(() => {
-                        if (game.state === STATES.STRIKE && !game.winner) {
-                            game.enemyStrikeTime = Date.now();
-                            enemy.attacking = true;
-                            resolveRound();
-                        }
-                    }, enemyReaction);
-                }
-            }, 1500 + waitTime);
-        }
-
-        // Player input
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
+            if (e.code === 'Space' && gameStarted && !player.dead) {
                 e.preventDefault();
-
-                if (game.state === STATES.WAITING) {
-                    // Struck too early!
-                    game.winner = 'enemy';
-                    player.attacking = true;
-                    game.playerStrikeTime = Date.now();
-                    resolveRound();
-                } else if (game.state === STATES.STRIKE && !player.attacking) {
-                    // Valid strike
-                    player.attacking = true;
-                    game.playerStrikeTime = Date.now();
-                    resolveRound();
+                // Shove enemy
+                if (Math.abs(player.x - enemy.x) < 150 && !enemy.dodging) {
+                    enemy.x += 50;
+                    enemy.aiTimer = 30;
                 }
             }
         });
 
-        // Resolve round
-        function resolveRound() {
-            if (game.winner) return;
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            gameStarted = true;
+            ui.innerHTML = 'Kills: 0';
+            resetEnemy();
+        }
 
-            if (player.attacking && enemy.attacking) {
-                // Both struck - compare times
-                const playerTime = game.playerStrikeTime - game.strikeTime;
-                const enemyTime = game.enemyStrikeTime - game.strikeTime;
+        function resetEnemy() {
+            enemy.x = 900;
+            enemy.y = 500;
+            enemy.dead = false;
+            enemy.attacking = false;
+            enemy.dodging = false;
+            enemy.swordAngle = Math.PI;
+            enemy.aiTimer = Math.random() * 60 + 30;
+            enemy.aiState = 'approach';
+        }
 
-                if (playerTime < enemyTime) {
-                    game.winner = 'player';
-                } else {
-                    game.winner = 'enemy';
-                }
-            } else if (player.attacking && game.state === STATES.WAITING) {
-                // Player struck too early
-                game.winner = 'enemy';
-            }
-
-            if (game.winner) {
-                game.state = STATES.RESULT;
-
-                // Create effects
-                if (game.winner === 'player') {
-                    enemy.dead = true;
-                    game.wins++;
-                    game.slashEffect = new SlashEffect(enemy.x - 50, enemy.y, 1);
-
-                    // Blood explosion
-                    for (let i = 0; i < 30; i++) {
-                        game.bloodParticles.push(new BloodParticle(enemy.x, enemy.y));
-                    }
-                } else {
-                    player.dead = true;
-                    game.losses++;
-                    game.slashEffect = new SlashEffect(player.x + 50, player.y, -1);
-
-                    // Blood explosion
-                    for (let i = 0; i < 30; i++) {
-                        game.bloodParticles.push(new BloodParticle(player.x, player.y));
-                    }
-                }
-
-                game.cameraShake = 10;
-
-                // Show result
-                setTimeout(() => {
-                    const resultText = game.winner === 'player' ? 'VICTORY' : 'DEFEAT';
-                    const resultClass = game.winner === 'player' ? 'victory' : 'defeat';
-
-                    ui.innerHTML = `
-                        <div class="hud">
-                            <div class="stat">Round: ${game.round}</div>
-                            <div class="stat">Wins: ${game.wins} | Losses: ${game.losses}</div>
-                        </div>
-                        <div class="result">
-                            <div class="${resultClass}">${resultText}</div>
-                            <div class="continue-text" onclick="startGame()">
-                                PRESS TO CONTINUE
-                            </div>
-                        </div>
-                    `;
-                    game.winner = null;
-                }, 1000);
+        function createBlood(x, y, count) {
+            for (let i = 0; i < count; i++) {
+                blood.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: Math.random() * -10 - 5,
+                    size: Math.random() * 6 + 3,
+                    life: 1.0
+                });
             }
         }
 
-        // Update game
+        function updateAI() {
+            if (enemy.dead) return;
+
+            enemy.aiTimer--;
+
+            if (enemy.aiTimer <= 0) {
+                // Make decision
+                const dist = enemy.x - player.x;
+
+                if (dist > 200) {
+                    // Approach
+                    enemy.x -= 3;
+                    enemy.aiState = 'approach';
+                    enemy.aiTimer = 20;
+                } else if (dist < 100 && Math.random() < 0.3) {
+                    // Back off
+                    enemy.x += 2;
+                    enemy.aiTimer = 20;
+                } else if (dist < 150 && Math.random() < 0.4) {
+                    // Attack!
+                    if (!enemy.attacking) {
+                        enemy.attacking = true;
+                        enemy.attackTimer = 15;
+                    }
+                    enemy.aiTimer = 40;
+                } else if (player.attacking && Math.random() < 0.6) {
+                    // Dodge player attack
+                    enemy.dodging = true;
+                    enemy.dodgeTimer = 20;
+                    enemy.aiTimer = 40;
+                } else {
+                    enemy.aiTimer = 10;
+                }
+            }
+
+            // Aim sword at player
+            const dx = player.x - enemy.x;
+            const dy = player.y - enemy.y;
+            enemy.swordAngle = Math.atan2(dy, dx);
+        }
+
+        function checkCollisions() {
+            // Player sword vs enemy
+            if (player.attacking && player.attackTimer > 10 && !enemy.dead && !enemy.dodging) {
+                const playerSwordX = player.x + Math.cos(player.swordAngle) * player.swordLength;
+                const playerSwordY = player.y + Math.sin(player.swordAngle) * player.swordLength;
+
+                const dist = Math.sqrt(
+                    Math.pow(playerSwordX - enemy.x, 2) + 
+                    Math.pow(playerSwordY - enemy.y, 2)
+                );
+
+                if (dist < 60) {
+                    // Check if enemy is blocking
+                    const angleDiff = Math.abs(player.swordAngle - enemy.swordAngle);
+                    if (angleDiff > 0.8) { // Not blocking
+                        enemy.dead = true;
+                        enemy.headX = enemy.x;
+                        enemy.headY = enemy.y - 40;
+                        createBlood(enemy.x, enemy.y - 20, 40);
+                        kills++;
+                        ui.innerHTML = 'Kills: ' + kills;
+                        setTimeout(resetEnemy, 2000);
+                    }
+                }
+            }
+
+            // Enemy sword vs player
+            if (enemy.attacking && enemy.attackTimer > 10 && !player.dead && !player.dodging) {
+                const enemySwordX = enemy.x + Math.cos(enemy.swordAngle) * enemy.swordLength;
+                const enemySwordY = enemy.y + Math.sin(enemy.swordAngle) * enemy.swordLength;
+
+                const dist = Math.sqrt(
+                    Math.pow(enemySwordX - player.x, 2) + 
+                    Math.pow(enemySwordY - player.y, 2)
+                );
+
+                if (dist < 60) {
+                    const angleDiff = Math.abs(player.swordAngle - enemy.swordAngle);
+                    if (angleDiff > 0.8) {
+                        player.dead = true;
+                        player.headX = player.x;
+                        player.headY = player.y - 40;
+                        createBlood(player.x, player.y - 20, 40);
+                        gameOver = true;
+                        setTimeout(() => {
+                            alert('DEFEATED! Kills: ' + kills);
+                            location.reload();
+                        }, 1500);
+                    }
+                }
+            }
+        }
+
         function update() {
-            // Update blood particles
-            game.bloodParticles = game.bloodParticles.filter(p => {
-                p.update();
-                return p.life > 0;
-            });
+            if (!gameStarted) return;
 
-            // Update slash effect
-            if (game.slashEffect) {
-                game.slashEffect.update();
-                if (game.slashEffect.life <= 0) {
-                    game.slashEffect = null;
+            // Update player sword angle to mouse
+            if (!player.dead) {
+                const dx = mouseX - player.x;
+                const dy = mouseY - player.y;
+                player.swordAngle = Math.atan2(dy, dx);
+            }
+
+            // Update timers
+            if (player.attackTimer > 0) {
+                player.attackTimer--;
+                if (player.attackTimer === 0) player.attacking = false;
+            }
+
+            if (player.dodgeTimer > 0) {
+                player.dodgeTimer--;
+                if (player.dodgeTimer === 0) player.dodging = false;
+            }
+
+            if (enemy.attackTimer > 0) {
+                enemy.attackTimer--;
+                if (enemy.attackTimer === 0) enemy.attacking = false;
+            }
+
+            if (enemy.dodgeTimer > 0) {
+                enemy.dodgeTimer--;
+                if (enemy.dodgeTimer === 0) enemy.dodging = false;
+            }
+
+            // Update AI
+            updateAI();
+
+            // Check collisions
+            checkCollisions();
+
+            // Update blood
+            for (let i = blood.length - 1; i >= 0; i--) {
+                const b = blood[i];
+                b.vy += 0.5; // gravity
+                b.x += b.vx;
+                b.y += b.vy;
+                b.life -= 0.01;
+                if (b.life <= 0 || b.y > canvas.height) {
+                    blood.splice(i, 1);
                 }
             }
-
-            // Reduce camera shake
-            if (game.cameraShake > 0) {
-                game.cameraShake *= 0.9;
-                if (game.cameraShake < 0.1) game.cameraShake = 0;
-            }
         }
 
-        // Draw game
+        function drawCharacter(char, isPlayer) {
+            if (char.dead) {
+                // Draw headless body
+                ctx.fillStyle = '#4a0000';
+                ctx.fillRect(char.x - char.width / 2, char.y - char.height / 2 + 20, char.width, char.height - 20);
+
+                // Draw severed head
+                ctx.fillStyle = '#d4a574';
+                ctx.fillRect(char.headX - 12, char.headY - 12, 24, 24);
+
+                // Blood splatter on body
+                ctx.fillStyle = '#8b0000';
+                ctx.fillRect(char.x - char.width / 2, char.y - char.height / 2 + 15, char.width, 10);
+                return;
+            }
+
+            // Body
+            ctx.fillStyle = char.dodging ? '#555' : '#1a1a1a';
+            ctx.fillRect(char.x - char.width / 2, char.y - char.height / 2, char.width, char.height);
+
+            // Head
+            ctx.fillStyle = '#d4a574';
+            ctx.fillRect(char.x - 12, char.y - char.height / 2 - 20, 24, 20);
+
+            // Sword
+            ctx.save();
+            ctx.translate(char.x, char.y);
+            ctx.rotate(char.swordAngle);
+
+            // Blade
+            ctx.strokeStyle = char.attacking ? '#ffffff' : '#c0c0c0';
+            ctx.lineWidth = char.attacking ? 6 : 4;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(char.swordLength, 0);
+            ctx.stroke();
+
+            // Handle
+            ctx.strokeStyle = '#8b0000';
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            ctx.moveTo(-10, 0);
+            ctx.lineTo(10, 0);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
         function draw() {
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Background
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#4a1a1a');
+            gradient.addColorStop(1, '#2a0808');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw scene
-            drawBackground();
-            drawGround();
+            // Ground
+            ctx.fillStyle = '#3a2a1a';
+            ctx.fillRect(0, canvas.height - 150, canvas.width, 150);
+            ctx.strokeStyle = '#8b0000';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height - 150);
+            ctx.lineTo(canvas.width, canvas.height - 150);
+            ctx.stroke();
 
-            // Draw characters
-            drawCharacter(player, false);
-            drawCharacter(enemy, true);
-
-            // Draw slash effect
-            if (game.slashEffect) {
-                game.slashEffect.draw();
+            // Blood
+            for (const b of blood) {
+                ctx.globalAlpha = b.life;
+                ctx.fillStyle = '#8b0000';
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+                ctx.fill();
             }
+            ctx.globalAlpha = 1;
 
-            // Draw blood particles
-            game.bloodParticles.forEach(p => p.draw());
+            // Characters
+            drawCharacter(player, true);
+            drawCharacter(enemy, false);
         }
 
-        // Game loop
         function gameLoop() {
             update();
             draw();
             requestAnimationFrame(gameLoop);
         }
 
-        // Initialize
-        showTitleScreen();
         gameLoop();
     </script>
 </body>
